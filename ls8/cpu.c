@@ -18,37 +18,39 @@ void cpu_ram_write(struct cpu *cpu, int index, unsigned char val)
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, int argc, char *argv[] )
 {
-  // char data[DATA_LEN] = {
-  //   // From print8.ls8
-  //   0b10000010, // LDI R0,8
-  //   0b00000000,
-  //   0b00001000,
-  //   0b01000111, // PRN R0
-  //   0b00000000,
-  //   0b00000001  // HLT
-  // };
+  if (argc < 2) {
+    char data[DATA_LEN] = {
+      // From print8.ls8
+      0b10000010, // LDI R0,8
+      0b00000000,
+      0b00001000,
+      0b01000111, // PRN R0
+      0b00000000,
+      0b00000001  // HLT
+    };
 
-  // int address = 0;
+    int address = 0;
 
-  // for (int i = 0; i < DATA_LEN; i++) {
-  //   cpu->ram[address++] = data[i];
-  // }
+    for (int i = 0; i < DATA_LEN; i++) {
+      cpu->ram[address++] = data[i];
+    }
+  } else {
+    // TODO: Replace this with something less hard-coded
 
-  // TODO: Replace this with something less hard-coded
+    FILE *fp;
+    char line[1024];
 
-  FILE *fp;
-  char line[1024];
+    fp = fopen(argv[1], "r");
 
-  fp = fopen("./examples/mult.ls8", "r");
-
-  int count = 0;
-  while (fgets(line, 1024, fp) != NULL) {
-    char *ptr;
-    unsigned char ret = strtoul(line, &ptr, 2);
-    // printf("%u\n", ret);
-    cpu_ram_write(cpu, count++, ret);
+    int count = 0;
+    while (fgets(line, 1024, fp) != NULL) {
+      char *ptr;
+      unsigned char ret = strtoul(line, &ptr, 2);
+      // printf("%u\n", ret);
+      cpu_ram_write(cpu, count++, ret);
+    }
   }
 }
 
