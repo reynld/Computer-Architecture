@@ -47,8 +47,10 @@ void cpu_load(struct cpu *cpu, int argc, char *argv[] )
     int count = 0;
     while (fgets(line, 1024, fp) != NULL) {
       char *ptr;
-      unsigned char ret = strtoul(line, &ptr, 2);
-      cpu_ram_write(cpu, count++, ret);
+      if (strncmp(line, "#", 1)){
+        unsigned char ret = strtoul(line, &ptr, 2);
+        cpu_ram_write(cpu, count++, ret);
+      }
     }
   }
 }
