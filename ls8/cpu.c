@@ -74,6 +74,10 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 void cpu_run(struct cpu *cpu)
 {
   int running = 1; // True until we get a HLT instruction
+  cpu->registers[7] = 255;
+
+  unsigned char operandA, operandB;
+  unsigned char reg_num, val;
 
   while (running) {
     // TODO
@@ -82,12 +86,27 @@ void cpu_run(struct cpu *cpu)
 
     // 2. Figure out how many operands this next instruction requires
     // 3. Get the appropriate value(s) of the operands following this instruction
-    unsigned char operandA = cpu_ram_read(cpu, cpu->pc + 1);
-    unsigned char operandB = cpu_ram_read(cpu, cpu->pc + 2);
+    operandA = cpu_ram_read(cpu, cpu->pc + 1);
+    operandB = cpu_ram_read(cpu, cpu->pc + 2);
 
     // 4. switch() over it to decide on a course of action.
     // 5. Do whatever the instruction should do according to the spec.
     switch(current) {
+      case PUSH:
+        cpu->registers[7]--;
+        reg_num = cpu->ram[current + 1];
+        val = cpu->registers[reg_num];
+        cpu->ram[cpu->registers[7]] = val;
+        cpu->pc = cpu->pc + 1;
+        break;
+
+      case POP:
+        reg_num = cpu->ram[current + 1];
+        cpu->registers[reg_num] = cpu->ram[cpu->registers[7]];
+        cpu->registers[7]++;
+        cpu->pc = cpu->pc + 1;
+        break;
+
       case HLT:
         running = 0;
         break;
