@@ -62,10 +62,18 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     case ALU_MUL:
       // TODO
       cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
-      cpu->pc = cpu->pc + 2;
+      break;
+    
+    case ALU_CMP:
+      if (regA === regB) {
+        cpu->fl = 1;
+      } else {
+        cpu->fl = 0;
+      }
       break;
     // TODO: implement more ALU ops
   }
+  cpu->pc = cpu->pc + 2;
 }
 
 /**
@@ -119,6 +127,10 @@ void cpu_run(struct cpu *cpu)
       case MUL:
         alu(cpu, ALU_MUL, operandA, operandB);
         break;
+
+      case CMP:
+        alu(cpu, ALU_CMP, operandA, operandB);
+        break;
       
       case PRN:
         printf("%d\n", cpu->registers[operandA]);
@@ -140,6 +152,7 @@ void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
   cpu->pc = 0;
+  cpu->fl = 0;
   // memset(cpu->ram, 0, sizeof(cpu));
   cpu->ram = calloc(256, sizeof(unsigned char));
   cpu->registers = calloc(8, sizeof(unsigned char));
