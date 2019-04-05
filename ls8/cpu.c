@@ -65,6 +65,32 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       // TODO
       cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
       break;
+    case ALU_AND:
+      cpu->registers[regA] = cpu->registers[regA] & cpu->registers[regB];
+      break;
+    case ALU_OR:
+      cpu->registers[regA] = cpu->registers[regA] | cpu->registers[regB];
+      break;
+    case ALU_XOR:
+      cpu->registers[regA] = cpu->registers[regA] ^ cpu->registers[regB];
+      break;
+    case ALU_NOT:
+      cpu->registers[regA] = ~cpu->registers[regA];
+      cpu->pc = cpu->pc - 1;
+      break;
+    case ALU_SHL:
+      cpu->registers[regA] = cpu->registers[regA] << cpu->registers[regB];
+      break;
+    case ALU_SHR:
+      cpu->registers[regA] = cpu->registers[regA] >> cpu->registers[regB];
+      break;
+    case ALU_MOD:
+      cpu->registers[regA] = cpu->registers[regA] % cpu->registers[regB];
+      if (cpu->registers[regA] == 0) {
+        printf("Error: MOD is equal to 0");
+        cpu->ram[cpu->pc+3] = HLT;
+      }
+      break;
     
     case ALU_CMP:
       if (cpu->registers[regA] == cpu->registers[regB]) {
@@ -139,15 +165,41 @@ void cpu_run(struct cpu *cpu)
         alu(cpu, ALU_CMP, operandA, operandB);
         break;
 
+      case AND:
+        alu(cpu, ALU_AND, operandA, operandB);
+        break;
+
+      case NOT:
+        alu(cpu, ALU_NOT, operandA, operandB);
+        break;
+
+      case OR:
+        alu(cpu, ALU_OR, operandA, operandB);
+        break;
+
+      case XOR:
+        alu(cpu, ALU_XOR, operandA, operandB);
+        break;
+
+      case SHL:
+        alu(cpu, ALU_SHL, operandA, operandB);
+        break;
+
+      case SHR:
+        alu(cpu, ALU_SHR, operandA, operandB);
+        break;
+
+      case MOD:
+        alu(cpu, ALU_MOD, operandA, operandB);
+        break;
+
       case JMP:
         cpu->pc = cpu->registers[operandA];
-        // cpu->pc = cpu->pc + 1;
         break;
 
       case JEQ:
         if (cpu->fl == 1) {
           cpu->pc = cpu->registers[operandA];
-          // cpu->pc = cpu->pc + 1;
         } else {
           cpu->pc = cpu->pc + 2;
         }
@@ -161,7 +213,6 @@ void cpu_run(struct cpu *cpu)
           cpu->pc = cpu->pc + 2;
         }
         break;
-      
 
       default:
         break;
