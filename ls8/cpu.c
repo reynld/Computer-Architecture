@@ -65,7 +65,7 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       break;
     
     case ALU_CMP:
-      if (regA === regB) {
+      if (cpu->registers[regA] == cpu->registers[regB]) {
         cpu->fl = 1;
       } else {
         cpu->fl = 0;
@@ -73,7 +73,7 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       break;
     // TODO: implement more ALU ops
   }
-  cpu->pc = cpu->pc + 2;
+  cpu->pc = cpu->pc + 3;
 }
 
 /**
@@ -105,14 +105,14 @@ void cpu_run(struct cpu *cpu)
         reg_num = cpu->ram[current + 1];
         val = cpu->registers[reg_num];
         cpu->ram[cpu->registers[7]] = val;
-        cpu->pc = cpu->pc + 1;
+        cpu->pc = cpu->pc + 2;
         break;
 
       case POP:
         reg_num = cpu->ram[current + 1];
         cpu->registers[reg_num] = cpu->ram[cpu->registers[7]];
         cpu->registers[7]++;
-        cpu->pc = cpu->pc + 1;
+        cpu->pc = cpu->pc + 2;
         break;
 
       case HLT:
@@ -121,6 +121,11 @@ void cpu_run(struct cpu *cpu)
 
       case LDI:
         cpu->registers[operandA] = operandB;
+        cpu->pc = cpu->pc + 3;
+        break;
+
+      case PRN:
+        printf("%d\n", cpu->registers[operandA]);
         cpu->pc = cpu->pc + 2;
         break;
 
@@ -131,17 +136,35 @@ void cpu_run(struct cpu *cpu)
       case CMP:
         alu(cpu, ALU_CMP, operandA, operandB);
         break;
-      
-      case PRN:
-        printf("%d\n", cpu->registers[operandA]);
-        cpu->pc = cpu->pc + 1;
+
+      case JMP:
+        cpu->pc = cpu->registers[operandA];
+        // cpu->pc = cpu->pc + 1;
         break;
+
+      case JEQ:
+        if (cpu->fl == 1) {
+          cpu->pc = cpu->registers[operandA];
+          // cpu->pc = cpu->pc + 1;
+        } else {
+          cpu->pc = cpu->pc + 2;
+        }
+        break;
+
+      case JNE:
+        if (cpu->fl == 0) {
+          cpu->pc = cpu->registers[operandA];
+          // cpu->pc = cpu->pc + 1;
+        } else {
+          cpu->pc = cpu->pc + 2;
+        }
+        break;
+      
 
       default:
         break;
     }
     // 6. Move the PC to the next instruction.
-    cpu->pc++;
   }
 }
 
